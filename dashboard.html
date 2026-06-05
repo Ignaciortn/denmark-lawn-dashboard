@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denmark Lawn Operations Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src = "https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Denmark Lawn Operations Dashboard</h1>
+        <span id="lastUpdated">Last Updated: --</span>
+    </header>
+
+    <div class="dashboard-container">
+
+        <section class="kpi-section">
+            <div class="kpi-card">
+                <div class="kpi-label">Gross Revenue This Week</div>
+                <div class="kpi-value" id="grossRevenue">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">Month to Date Revenue</div>
+                <div class="kpi-value" id="monthRevenue">--</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">Monthly Target</div>
+                <div class="kpi-value" id="monthTarget">--</div>
+            </div>
+
+            <div class="kpi-card status-card">
+                <div class="kpi-label">Status</div>
+                <div class="kpi-value" id="status">--</div>
+            </div>
+        </section>
+
+        <section class="progress-section">
+            <div class="progress-card">
+                <div class="progress-label">Monthly Progress - <span id="progressPercent">0%</span></div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-min" id="progressBarMin"></div>
+                    <div class="progress-bar-goal" id="progressBarGoal"></div>
+                    <div class="progress-bar-actual" id="progressBarActual"></div>
+                </div>
+                <div class="progress-legend">
+                    <span class="legend-actual">■ Actual</span>
+                    <span class="legend-min">■ Min Target</span>
+                    <span class="legend-goal">■ Goal Target</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="charts-section">
+            <div class="chart-card">
+                <h2>Weekly Gross Revenue</h2>
+                <canvas id="weeklyRevenueChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>Monthly Gross Revenue</h2>
+                <canvas id="monthlyRevenueChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>Revenue vs Last Year</h2>
+                <canvas id="revenueVsLYChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>Revenue Target Progress</h2>
+                <canvas id="monthlyTargetChart"></canvas>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
