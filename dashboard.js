@@ -151,8 +151,17 @@ function renderMonthlyTargetChart(dailyData, targetsData) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: "index",
+                intersect: false
+            },
             plugins: {
-                legend: { labels: {color: "#222222" } }
+                legend: { labels: {color: "#222222" } },
+                tooltip: {
+                    mode: "index",
+                    intersect: false
+                }
             },
             scales: {
                 x: { ticks: { color: "#555555" } },
@@ -232,8 +241,16 @@ function renderRevenueVsLYMonthlyChart(dailyData, lyData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: "index",
+                intersect: false
+            },
             plugins: {
-                legend: { labels: {color: "#222222" } }
+                legend: { labels: {color: "#222222" } },
+                tooltip: {
+                    mode: "index",
+                    intersect: false
+                }
             },
             scales: {
                 x: { ticks: { color: "#555555" } },

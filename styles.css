@@ -78,7 +78,7 @@ header h1 {
 .charts-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;   
+    gap: 30px;   
 }
 
 .chart-card {
@@ -113,7 +113,8 @@ header h1 {
 
 .chart-card canvas {
     width: 100% !important;
-    height: 220px !important;
+    height: 280px !important;
+    
 }
 
 .progress-section {
