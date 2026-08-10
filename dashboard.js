@@ -5,11 +5,11 @@ const WEEKLY_FACT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWUHju
 
 const TARGETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWUHjuqCzbo5eG0-NlrjNnuLkyBThem6Vlz0OnZ_ZaLr-wq90_WGNohviZvpx8jmNg4WpXBuhaSAJ9/pub?gid=186783136&single=true&output=csv";
 
-let weeklyRevenueChart = null;
-let monthlyRevenueChart = null;
-let revenueVsLYChart = null;
-let monthlyTargetChart = null;
+const REVENUE_LY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWUHjuqCzbo5eG0-NlrjNnuLkyBThem6Vlz0OnZ_ZaLr-wq90_WGNohviZvpx8jmNg4WpXBuhaSAJ9/pub?gid=631839392&single=true&output=csv";
 
+
+let monthlyTargetChart = null;
+let revenueVsLYMonthlyChart = null;
 
 // Parse CSV text into an array of objects
 function parseCSV(text) {
@@ -79,189 +79,7 @@ function countWorkingDays(start, end) {
     return count;
 }
 
-// Render the weekly, monthly, revenue vs Last Year, and monthly target charts
-function renderWeeklyRevenueChart(weeklyData) {
-    const validWeeks = weeklyData.filter(row => {
-        const revenue = parseFloat(row.GrossRevenue_Week);
-        return row.WeekStart && row.WeekStart !== "0" && !isNaN(revenue) && revenue > 0;
-    });
-
-    validWeeks.sort((a, b) => new Date(a.WeekStart) - new Date(b.WeekStart));
-
-    const labels = validWeeks.map(row => row.WeekStart);
-    const data = validWeeks.map(row => parseFloat(row.GrossRevenue_Week));
-
-    const ctx = document.getElementById("weeklyRevenueChart").getContext("2d");
-
-    if (weeklyRevenueChart) {
-        weeklyRevenueChart.destroy();
-    }
-
-    weeklyRevenueChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Gross Revenue",
-                data: data,
-                borderColor: "#2D5F2E",
-                backgroundColor: "rgba(45, 95, 46, 0.2)",
-                borderWidth: 2,
-                pointBackgroundColor: "#5B2D8E",
-                pointRadius: 4,
-                fill: true,
-                tension: 0.3
-            }]            
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { labels: {color: "222222" } }
-            },
-            scales: {
-                x: { ticks: { color: "#555555" } },
-                y: {
-                    ticks: {
-                        color: "#555555",
-                        callback: value => "$" + value.toLocaleString()
-                    }
-                }
-            }
-        }
-    });
-}
-
-function renderMonthlyRevenueChart(dailyData) {
-    const monthTotals = {};
-
-    dailyData.forEach(row => {
-        if (!row.Date ||row.Date === "0" || row.Date === "") return;
-        const date = new Date(row.Date);
-
-        if(isNaN(date)) return;
-        const monthKey = date.getFullYear() + "-" +
-            String(date.getMonth() + 1).padStart(2, "0");
-        const revenue = parseFloat(row.GrossRevenue) || 0;
-
-        monthTotals[monthKey] = (monthTotals[monthKey] || 0) + revenue;
-    });
-
-    const sortedMonths = Object.keys(monthTotals).sort();
-    const labels = sortedMonths;
-    const data = sortedMonths.map(m => monthTotals[m]);
-
-    const ctx = document.getElementById("monthlyRevenueChart").getContext("2d");
-
-    if (monthlyRevenueChart) {
-        monthlyRevenueChart.destroy();
-    }
-
-    monthlyRevenueChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Monthly Gross Revenue",
-                data: data,
-                backgroundColor: "#7B5EA7",
-                borderColor: "#5B2D8E",
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { labels: {color: "#222222"} }
-            },
-            scales: {
-                x: { ticks: { color: "#555555"} },
-                y: {
-                    ticks: {
-                        color: "#555555",
-                        callback: value => "$" + value.toLocaleString()
-                    }
-                }
-            }
-        }
-    });
-}
-
-function renderRevenueVsLYChart(weeklyData) {
-    const validWeeks = weeklyData.filter(row => {
-        const revenue = parseFloat(row.GrossRevenue_Week);
-        const lyRevenue = parseFloat(row.Revenue_LY);
-
-        return row.WeekStart && 
-            row.WeekStart !== "0" &&
-            !isNaN(revenue) &&
-            revenue > 0 &&
-            !isNaN(lyRevenue) &&
-            lyRevenue > 0; 
-    });
-
-    console.log("Valid weeks for LY chart:", validWeeks.length);
-    console.log("Sample row:", weeklyData[5]);
-
-    validWeeks.sort((a, b) => new Date(a.WeekStart) - new Date(b.WeekStart));
-
-    const labels = validWeeks.map(row => row.WeekStart);
-    const currentData = validWeeks.map(row => parseFloat(row.GrossRevenue_Week));
-    const lyData = validWeeks.map(row => parseFloat(row.Revenue_LY));
-
-    const ctx = document.getElementById("revenueVsLYChart").getContext("2d");
-
-    if (revenueVsLYChart) {
-        revenueVsLYChart.destroy();
-    }
-
-    revenueVsLYChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: "This Year",
-                    data: currentData,
-                    borderColor: "#2D5F2E",
-                    backgroundColor: "rgba(45, 95, 46, 0.2)",
-                    borderWidth: 2,
-                    pointBackgroundColor: "#2D5F2E",
-                    pointRadius: 4,
-                    fill: false,
-                    tension: 0.3
-                },
-                {
-                    label: "Last Year",
-                    data: lyData,
-                    borderColor: "#5B2D8E",
-                    backgroundColor: "rgba(91, 45, 142, 0.2)",
-                    borderWidth: 2,
-                    pointBackgroundColor: "#5B2D8E",
-                    pointRadius: 4,
-                    fill: false,
-                    tension: 0.3
-                }
-            ]    
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { labels: {color: "#222222"}}
-            },
-            scales: {
-                x: { ticks: { color: "#555555"}},
-                y: {
-                    ticks: {
-                        color: "#555555",
-                        callback: value => "$" + value.toLocaleString()
-                    }
-                }
-            }
-        }
-        
-    });
-}
-
+// Renders monthly target charts
 function renderMonthlyTargetChart(dailyData, targetsData) {
     const monthTotals = {};
 
@@ -349,6 +167,87 @@ function renderMonthlyTargetChart(dailyData, targetsData) {
     });
 }
 
+// Renders monthly comparison chart - This Year vs Last Year (Monthly)
+function renderRevenueVsLYMonthlyChart(dailyData, lyData) {
+    // Calculate this year's montly totals from Daily_Operations
+    const monthTotals = {};
+    dailyData.forEach(row => {
+        if (!row.Date || row.Date === "0" || row.Date === "") return;
+
+        const date = new Date(row.Date);
+
+        if (isNaN(date)) return;
+
+        const monthKey = date.getFullYear() + "-" +
+            String(date.getMonth() + 1).padStart(2, "0");
+        const revenue = parseFloat(row.GrossRevenue) || 0;
+        monthTotals[monthKey] = (monthTotals[monthKey] || 0) + revenue;   
+    });
+
+    // Get this year's months
+    const thisYearMonths = Object.keys(monthTotals)
+        .filter(m => m.startsWith("2026"))
+        .sort();
+
+    // Match with last year's data
+    const thisYearData = thisYearMonths.map(m => monthTotals[m] || 0);
+    const lastYearData = thisYearMonths.map(m => {
+        const lyMonth = (parseInt(m.split("-")[0]) - 1) + "-" + m.split("-")[1];
+        const lyRow = lyData.find(row => row.Month === lyMonth);
+        return lyRow ? parseFloat(lyRow.GrossRevenue_LY) || 0 : 0;
+    });
+    
+    const labels = thisYearMonths.map(m => {
+        const date = new Date(m + "-01");
+        return date.toLocaleString("en-US", { month: "short"}) + " " + m.split("-")[0];
+    });
+
+    const ctx = document.getElementById("revenueVsLYMonthlyChart").getContext("2d");
+
+    if (revenueVsLYMonthlyChart) {
+        revenueVsLYMonthlyChart.destroy();
+    }
+
+    revenueVsLYMonthlyChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "This Year (2026)",
+                    data: thisYearData,
+                    backgroundColor: "#2D5F2E",
+                    borderColor: "#2D5F2E",
+                    borderWidth: 2
+                },
+                {
+                    label: "Last Year (2025)",
+                    data: lastYearData,
+                    backgroundColor: "#7B5EA7",
+                    borderColor: "#7B5EA7",
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: {color: "#222222" } }
+            },
+            scales: {
+                x: { ticks: { color: "#555555" } },
+                y: {
+                    ticks: {
+                        color: "#555555",
+                        callback: value => "$" + value.toLocaleString()
+                    }
+                }
+            } 
+        }
+    });
+}
+
 // Updates the monthly revenue progress bar
 // Shows actual revenue progress toward min and goal targets
 // Green bar = actual revenue, Yellow line = min target, Purple line = goal target
@@ -372,19 +271,22 @@ function updateProgressBar(monthRevenue, minTarget, goalTarget) {
 async function fetchData() {
     try {
         // Fetch both sheets at the same time
-        const [dailyRes, weeklyRes, targetsRes] = await Promise.all([
+        const [dailyRes, weeklyRes, targetsRes, lyRes] = await Promise.all([
             fetch(DAILY_OPS_URL),
             fetch(WEEKLY_FACT_URL),
-            fetch(TARGETS_URL)
+            fetch(TARGETS_URL),
+            fetch(REVENUE_LY_URL)
         ]);
 
         const dailyText = await dailyRes.text();
         const weeklyText = await weeklyRes.text();
         const targetsText = await targetsRes.text();
+        const lyText = await lyRes.text();
 
         const dailyData = parseCSV(dailyText);
         const weeklyData = parseCSV(weeklyText);
         const targetsData = parseCSV(targetsText);
+        const lyData = parseCSV(lyText);
 
         const currentWeek = getMostRecentWeek(weeklyData);
         const weekRevenue = parseFloat(currentWeek.GrossRevenue_Week) || 0;
@@ -396,6 +298,7 @@ async function fetchData() {
         console.log("Current Week:", currentWeek);
         console.log("Targets Data:", targetsData[0]);
         console.log("Current Target:", currentTarget);
+        console.log("LY Data:", lyData[0]);
 
         // Calculate month to date revenue from daily data
         const today = new Date();
@@ -464,11 +367,9 @@ async function fetchData() {
         document.getElementById("status").textContent = status;
 
         // Render charts
-        renderWeeklyRevenueChart(weeklyData);
-        renderMonthlyRevenueChart(dailyData);
-        renderRevenueVsLYChart(weeklyData);
         renderMonthlyTargetChart(dailyData, targetsData);
-        
+        renderRevenueVsLYMonthlyChart(dailyData, lyData);
+
     } catch (error) {
         console.error("Error fetching data:", error);
     }

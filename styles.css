@@ -113,6 +113,7 @@ header h1 {
 
 .chart-card canvas {
     width: 100% !important;
+    height: 220px !important;
 }
 
 .progress-section {
