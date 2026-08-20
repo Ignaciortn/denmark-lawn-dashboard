@@ -207,8 +207,11 @@ function renderRevenueVsLYMonthlyChart(dailyData, lyData) {
     });
     
     const labels = thisYearMonths.map(m => {
-        const date = new Date(m + "-01");
-        return date.toLocaleString("en-US", { month: "short"}) + " " + m.split("-")[0];
+        //const date = new Date(m + "-01");
+        //return date.toLocaleString("en-US", { month: "short"}) + " " + m.split("-")[0];
+        const parts = m.split("-");
+        const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+        return date.toLocaleString("en-US", { month: "short"}) + " " + parts[0];
     });
 
     const ctx = document.getElementById("revenueVsLYMonthlyChart").getContext("2d");
