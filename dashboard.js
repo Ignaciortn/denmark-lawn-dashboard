@@ -46,17 +46,24 @@ function parseCSV(text) {
 
 // Get the most recent week with data
 function getMostRecentWeek(weeklyData) {
+    const today = new Date();
     const withData = weeklyData.filter(row => {
-        return row.WeekStart && row.WeekStart !== "0" && row.WeekStart !== "";
+        if (!row.WeekStart || row.WeekStart === "0" || row.WeekStart === "") return false;
+        const weekStart = new Date(row.WeekStart);
+        const weekEnd = new Date(row.WeekEnd);
+        return weekStart <= today && weekEnd >= today;
     });
-    withData.sort((a, b) => new Date(b.WeekStart) - new Date(a.WeekStart));
-    return withData[0];
+    if (withData.length > 0) return withData[0];
+
+    const allValid = weeklyData.filter(row=> row.WeekStart && row.WeekStart !== "0");
+    allValid.sort((a, b) => new Date(b.WeekStart) - new Date(a.WeekStart));
+    return allValid[0];
 }
 
-function getCurrentMonthTarget(targetsData, weekStart) {
-    const date = new Date(weekStart);
-    const monthKey = date.getFullYear() + "-" +
-        String(date.getMonth() + 1).padStart(2, "0");
+function getCurrentMonthTarget(targetsData, date) {
+    const d = new Date(date);
+    const monthKey = d.getFullYear() + "-" +
+        String(d.getMonth() + 1).padStart(2, "0");
     return targetsData.find(row => row.Month === monthKey) || null;
 }
 
@@ -308,9 +315,10 @@ async function fetchData() {
         const targetsData = parseCSV(targetsText);
         const lyData = parseCSV(lyText);
 
+        const today = new Date();
         const currentWeek = getMostRecentWeek(weeklyData);
         const weekRevenue = parseFloat(currentWeek.GrossRevenue_Week) || 0;
-        const currentTarget = getCurrentMonthTarget(targetsData, currentWeek.WeekStart);
+        const currentTarget = getCurrentMonthTarget(targetsData, today);
 
         console.log("Daily Data:", dailyData[0]);
         console.log("Weekly Data:", weeklyData[0]);
@@ -321,9 +329,8 @@ async function fetchData() {
         console.log("LY Data:", lyData[0]);
 
         // Calculate month to date revenue from daily data
-        const today = new Date();
         const weekStart = new Date(currentWeek.WeekStart);
-        const monthStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         const monthEnd = today;
 
         console.log("First daily row:", dailyData[0]);
@@ -355,8 +362,8 @@ async function fetchData() {
         const minTarget = currentTarget ? parseFloat(currentTarget.MinTarget_GrossRevenue) : 0;
 
         // Calculating working days for status
-        const monthStart2 = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
-        const monthEnd2 = new Date(weekStart.getFullYear(), weekStart.getMonth() + 1, 0);
+        const monthStart2 = new Date(weekStart.getFullYear(), today.getMonth(), 1);
+        const monthEnd2 = new Date(weekStart.getFullYear(), today.getMonth() + 1, 0);
         const workingDaysTotal = countWorkingDays(monthStart2, monthEnd2);
         const workingDaysSoFar = countWorkingDays(monthStart2, today);
         const proratedTarget = (goalTarget / workingDaysTotal) * workingDaysSoFar;
